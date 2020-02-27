@@ -21,6 +21,6 @@ export const columns = [
     title: 'Цена',
     dataIndex: 'price',
     key: 'price',
-    sorter: (a: IHotel, b: IHotel) => a.id - b.id,
+    sorter: (a: IHotel, b: IHotel) => a.price - b.price,
   },
 ];

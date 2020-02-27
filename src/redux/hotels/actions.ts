@@ -1,6 +1,5 @@
 import { put, takeLatest } from 'redux-saga/effects';
 import * as type from './constants';
-import { IHotel } from '../../interface/hotels';
 import { getData } from '../../services/mock';
 
 const fetchHotels = (params: type.PaginationProps): type.HotelsActionType => ({
@@ -8,7 +7,9 @@ const fetchHotels = (params: type.PaginationProps): type.HotelsActionType => ({
   params,
 });
 
-const fetchHotelsSuccess = (hotels: IHotel[]): type.HotelsActionType => ({
+const fetchHotelsSuccess = (
+  hotels: type.HotelRequestProps,
+): type.HotelsActionType => ({
   type: type.FETCH_HOTELS_SUCCESS,
   hotels,
 });

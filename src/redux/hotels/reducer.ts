@@ -4,6 +4,7 @@ import { HotelStateInterface } from '../../interface/hotels';
 const initialState: HotelStateInterface = {
   error: null,
   list: [],
+  totalElements: 0,
   loaders: {},
 };
 
@@ -30,7 +31,8 @@ export const hotelsReducer = (
       return {
         ...state,
         loaders: { ...state.loaders, getHotels: false },
-        list: action.hotels,
+        list: action.hotels.data,
+        totalElements: action.hotels.totalElements,
       };
     }
     default:

@@ -4,9 +4,18 @@ export const FETCH_HOTELS_REQUEST = 'FETCH_HOTELS_REQUEST';
 export const FETCH_HOTELS_SUCCESS = 'FETCH_HOTELS_SUCCESS';
 export const FETCH_HOTELS_FAILURE = 'FETCH_HOTELS_FAILURE';
 
+export const FETCH_MORE_HOTELS_REQUEST = 'FETCH_MORE_HOTELS_REQUEST';
+export const FETCH_MORE_HOTELS_SUCCESS = 'FETCH_MORE_HOTELS_SUCCESS';
+export const FETCH_MORE_HOTELS_FAILURE = 'FETCH_MORE_HOTELS_FAILURE';
+
 export interface PaginationProps {
   page: number;
   limit: number;
+}
+
+export interface HotelRequestProps {
+  data: IHotel[];
+  totalElements: number;
 }
 
 export interface FetchHotelsRequestInterface {
@@ -16,7 +25,7 @@ export interface FetchHotelsRequestInterface {
 
 export interface FetchHotelsSuccessInterface {
   type: typeof FETCH_HOTELS_SUCCESS;
-  hotels: IHotel[];
+  hotels: HotelRequestProps;
 }
 
 export interface FetchHotelsFailureInterface {

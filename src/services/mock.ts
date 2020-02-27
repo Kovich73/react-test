@@ -18,7 +18,7 @@ const arrayRandElement = (arr: string[] | number[]) => {
 
 const data: IHotel[] = [];
 
-for (let i = 0; i < 50; i++) {
+for (let i = 0; i < 100; i++) {
   const region = arrayRandElement(regions) as string;
   const name = arrayRandElement(names) as string;
   const price = arrayRandElement(prices) as number;
@@ -26,8 +26,11 @@ for (let i = 0; i < 50; i++) {
 }
 
 const getData = ({ page, limit }: PaginationProps) => {
-  console.log(data);
-  return data.slice(page * limit, (page + 1) * limit);
+  const result = data.slice(page * limit, (page + 1) * limit);
+  return {
+    data: result,
+    totalElements: data.length,
+  };
 };
 
 export { getData, data };

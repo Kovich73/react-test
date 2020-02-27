@@ -2,6 +2,7 @@ export interface HotelStateInterface {
   list: IHotel[];
   loaders: { [key: string]: any };
   error: any;
+  totalElements: number;
 }
 
 export interface IHotel {
