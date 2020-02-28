@@ -1,7 +1,14 @@
 import { IHotel } from '../interface/hotels';
 import { HotelRequestParams } from '../redux/hotels/constants';
 
-export const regions = ['Москва', 'Самара', 'Челябинск', 'Ульяновск', 'Казань', 'Санкт-Петербург'];
+export const regions = [
+  'Москва',
+  'Самара',
+  'Челябинск',
+  'Ульяновск',
+  'Казань',
+  'Санкт-Петербург',
+];
 const names = [
   'Palace Hotel',
   'Top Hotel',
@@ -26,19 +33,22 @@ for (let i = 0; i < 100; i++) {
   data.push({ name, price, region, id: i });
 }
 
-const getData = ({ page, limit, region, name }: HotelRequestParams) => {
+const getData = ({ page, limit, region, name, price }: HotelRequestParams) => {
   let arr = [...data];
-  if (region) {
-    arr = arr.filter((hotel: IHotel) => hotel.region === region);
-  }
-  if (name) {
-    arr = arr.filter((hotel: IHotel) => hotel.name.toLowerCase().includes(name.toLowerCase()));
+  if (region || name || (price && (price.to || price.from))) {
+    arr = arr.filter(
+      (hotel: IHotel) =>
+        (price && price.from ? hotel.price >= price.from : true) &&
+        (price && price.to ? hotel.price <= price.to : true) &&
+        (name ? hotel.name.toLowerCase().includes(name.toLowerCase()) : true) &&
+        (region ? hotel.region === region : true),
+    );
   }
   const result = arr.slice(page * limit, (page + 1) * limit);
   return {
     data: result,
     totalElements: arr.length,
-    totalPages: Math.ceil(arr.length / limit)
+    totalPages: Math.ceil(arr.length / limit),
   };
 };
 
