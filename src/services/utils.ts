@@ -1,26 +1,6 @@
-export function throttle(func: Function, ms: number) {
-  let isThrottled = false;
-  let savedArgs: any;
-  let savedThis: any;
-
-  function wrapper() {
-    if (isThrottled) {
-      savedArgs = arguments;
-      // @ts-ignore
-      savedThis = this;
-      return;
-    }
-    // @ts-ignore
-    func.apply(this, arguments);
-    isThrottled = true;
-    setTimeout(() => {
-      isThrottled = false;
-      if (savedArgs) {
-        wrapper.apply(savedThis, savedArgs);
-        savedArgs = savedThis = null;
-      }
-    }, ms);
-  }
-
-  return wrapper;
+export const sortString = (a: string, b: string) => {
+  const strA = a.toLowerCase();
+  const strB = b.toLowerCase();
+  if (strA < strB) return -1
+  return strA > strB ? 1 : 0;
 }

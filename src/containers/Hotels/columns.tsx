@@ -1,4 +1,5 @@
 import { IHotel } from '../../interface/hotels';
+import { sortString } from '../../services/utils';
 
 export const columns = [
   {
@@ -11,11 +12,13 @@ export const columns = [
     title: 'Название',
     dataIndex: 'name',
     key: 'name',
+    sorter: (a: IHotel, b: IHotel) => sortString(a.name, b.name),
   },
   {
     title: 'Регион',
     dataIndex: 'region',
     key: 'region',
+    sorter: (a: IHotel, b: IHotel) => sortString(a.region, b.region),
   },
   {
     title: 'Цена',

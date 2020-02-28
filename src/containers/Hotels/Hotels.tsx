@@ -1,33 +1,69 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Table } from 'antd';
 import { connect } from 'react-redux';
-import { fetchHotels } from '../../redux/hotels';
-import { throttle } from '../../services/utils';
-import { PaginationProps } from '../../redux/hotels/constants';
+import { throttle } from 'lodash';
+import { fetchHotels, fetchMoreHotels } from '../../redux/hotels';
+import { HotelRequestParams } from '../../redux/hotels/constants';
 import { HotelStateInterface } from '../../interface/hotels';
-import { Container, Filters, Content } from './Hotels.styled';
+import { Container, Content } from './Hotels.styled';
+import Filters from './components/Filters';
 import { columns } from './columns';
 
 interface HotelPropsInterface {
-  fetchHotels: (params: PaginationProps) => void;
+  fetchMoreHotels: (params: HotelRequestParams) => void;
+  fetchHotels: (params: HotelRequestParams) => void;
   hotels: HotelStateInterface;
 }
 
-const Hotels = (props: HotelPropsInterface) => {
+const Hotels: React.FunctionComponent<HotelPropsInterface> = (props: HotelPropsInterface) => {
   const [page, setPage] = useState(0);
-  const [limit, setLimit] = useState(30);
+  const [limit, setLimit] = useState(20);
+  const [region, setRegion] = useState('');
+  const [name, setName] = useState('');
+
+  const { loaders, totalPages, list } = props.hotels;
+  const divElement = useRef(null);
+  // @ts-ignore
+  const scrollBlock = divElement ? divElement.current as HTMLDivElement : null;
+
+  const loadNextPage = async () => {
+    await props.fetchMoreHotels({ limit, region, page: page + 1, name: name.length >= 3 ? name : '' });
+    setPage(page + 1);
+  }
+
+  const loadHotels = async () => {
+    console.log('load');
+    await props.fetchHotels({ limit, region, page: 0, name: name.length >= 3 ? name : '' });
+    setPage(0);
+  }
 
   useEffect(() => {
-    props.fetchHotels({ page, limit });
-  }, []);
+    loadHotels();
+  }, [region, name]);
 
-  const loadMoreHotels = () => {
-    const block = document.getElementById('hotels-list');
+  // загрузка следующей страницы
+  // если данные не заполняют блок до конца
+  // т.е. фича связанная с высотой блока
+  useEffect(() => {
     if (
-      block &&
-      block.scrollTop + block.offsetHeight >= block.scrollHeight - 50
+      scrollBlock
+      && scrollBlock.clientHeight >= scrollBlock.scrollHeight
+      && list.length
+      && !loaders.getHotel
+      && !loaders.getMoreHotels
+      && page < totalPages
     ) {
-      console.log('loadMore');
+      loadNextPage();
+    }
+  }, [list]);
+
+  const loadMoreHotels = async () => {
+    if (
+      scrollBlock &&
+      scrollBlock.scrollTop + scrollBlock.offsetHeight >= scrollBlock.scrollHeight - 50 &&
+      !loaders.getHotel && !loaders.getMoreHotels && page < totalPages - 1
+    ) {
+      loadNextPage();
     }
   };
 
@@ -35,15 +71,14 @@ const Hotels = (props: HotelPropsInterface) => {
 
   return (
     <Container>
-      <Filters>
-        <h1>Фильтры</h1>
-      </Filters>
-      <Content onScroll={loadMoreHotelsThrottle} id="hotels-list">
+      <Filters changeRegion={setRegion} changeName={setName} />
+      <Content onScroll={loadMoreHotelsThrottle} ref={divElement}>
         <Table
           dataSource={props.hotels.list}
           columns={columns}
-          loading={props.hotels.loaders.getHotels}
+          loading={loaders.getHotels || loaders.getMoreHotels}
           pagination={false}
+          rowKey="id"
         />
       </Content>
     </Container>
@@ -55,5 +90,6 @@ const mapStateToProps = ({ hotels }: any) => ({
 });
 
 export default connect(mapStateToProps, {
+  fetchMoreHotels,
   fetchHotels,
 })(Hotels);

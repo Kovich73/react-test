@@ -3,6 +3,7 @@ export interface HotelStateInterface {
   loaders: { [key: string]: any };
   error: any;
   totalElements: number;
+  totalPages: number;
 }
 
 export interface IHotel {
