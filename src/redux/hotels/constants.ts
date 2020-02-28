@@ -8,15 +8,18 @@ export const FETCH_MORE_HOTELS_REQUEST = 'FETCH_MORE_HOTELS_REQUEST';
 export const FETCH_MORE_HOTELS_SUCCESS = 'FETCH_MORE_HOTELS_SUCCESS';
 export const FETCH_MORE_HOTELS_FAILURE = 'FETCH_MORE_HOTELS_FAILURE';
 
-export interface HotelRequestParams {
-  page: number;
+export interface HotelRequestFilters {
   limit: number;
   region?: string;
   name?: string;
   price?: {
     from?: number;
     to?: number;
-  }
+  };
+}
+
+export interface HotelRequestParams extends HotelRequestFilters {
+  page: number;
 }
 
 export interface HotelRequestProps {

@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Table } from 'antd';
 import { connect } from 'react-redux';
-import { throttle } from 'lodash';
+import { throttle, isEqual } from 'lodash';
 import { fetchHotels, fetchMoreHotels } from '../../redux/hotels';
-import { HotelRequestParams } from '../../redux/hotels/constants';
+import {
+  HotelRequestParams,
+  HotelRequestFilters,
+} from '../../redux/hotels/constants';
 import { HotelStateInterface } from '../../interface/hotels';
+import { defaultState } from '../../constants/hotels';
 import { Container, Content } from './Hotels.styled';
 import Filters from './components/Filters';
 import { columns } from './columns';
@@ -19,11 +23,8 @@ const Hotels: React.FunctionComponent<HotelPropsInterface> = (
   props: HotelPropsInterface,
 ) => {
   const [page, setPage] = useState(0);
-  const [limit, setLimit] = useState(20);
-  const [region, setRegion] = useState('');
-  const [name, setName] = useState('');
-  const [priceFrom, setPriceFrom] = useState(0);
-  const [priceTo, setPriceTo] = useState(0);
+  const [filters, setFilters] = useState<HotelRequestFilters>(defaultState);
+  const { name, region, limit, price } = filters;
 
   const { loaders, totalPages, list } = props.hotels;
   const divElement = useRef(null);
@@ -36,9 +37,9 @@ const Hotels: React.FunctionComponent<HotelPropsInterface> = (
     await props.fetchMoreHotels({
       limit,
       region,
+      price,
       page: page + 1,
-      name: name.length >= 3 ? name : '',
-      price: { from: priceFrom, to: priceTo },
+      name: name && name.length >= 3 ? name : '',
     });
     setPage(page + 1);
   };
@@ -49,16 +50,16 @@ const Hotels: React.FunctionComponent<HotelPropsInterface> = (
     await props.fetchHotels({
       limit,
       region,
+      price,
       page: 0,
-      name: name.length >= 3 ? name : '',
-      price: { from: priceFrom, to: priceTo },
+      name: name && name.length >= 3 ? name : '',
     });
     setPage(0);
   };
 
   useEffect(() => {
     loadHotels();
-  }, [region, name, priceFrom, priceTo, limit]);
+  }, [filters]);
 
   // загрузка следующей страницы
   // если данные не заполняют блок до конца
@@ -95,13 +96,7 @@ const Hotels: React.FunctionComponent<HotelPropsInterface> = (
 
   return (
     <Container>
-      <Filters
-        changeRegion={setRegion}
-        changeName={setName}
-        changePriceTo={setPriceTo}
-        changePriceFrom={setPriceFrom}
-        changeLimit={setLimit}
-      />
+      <Filters changeFilters={setFilters} />
       <Content onScroll={loadMoreHotelsThrottle} ref={divElement}>
         <Table
           dataSource={props.hotels.list}

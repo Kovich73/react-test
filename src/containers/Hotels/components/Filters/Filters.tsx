@@ -11,58 +11,30 @@ import {
 } from 'antd';
 import { regions } from '../../../../services/mock';
 import { Filters as StyledFilters } from './Filters.styled';
+import { HotelRequestFilters } from '../../../../redux/hotels/constants';
+import {
+  MIN_PRICE_HOTEL,
+  MAX_PRICE_HOTEL,
+  defaultState,
+} from '../../../../constants/hotels';
 import { throttle } from 'lodash';
 
 const { Option } = Select;
 const FormItem = Form.Item;
 
 interface FiltersProps {
-  changeRegion: (value: string) => void;
-  changeName: (value: string) => void;
-  changePriceTo: (value: number) => void;
-  changePriceFrom: (value: number) => void;
-  changeLimit: (value: number) => void;
+  changeFilters: (filters: HotelRequestFilters) => void;
 }
 
-const MIN_PRICE_HOTEL = 0;
-const MAX_PRICE_HOTEL = 30000;
-
 const Filters: React.FunctionComponent<FiltersProps> = ({
-  changeRegion,
-  changeName,
-  changePriceFrom,
-  changePriceTo,
-  changeLimit,
+  changeFilters,
 }: FiltersProps) => {
-  const [name, setName] = React.useState('');
-  const [region, setRegion] = React.useState('choose');
-  const [priceFrom, setPriceFrom] = React.useState(MIN_PRICE_HOTEL);
-  const [priceTo, setPriceTo] = React.useState(MAX_PRICE_HOTEL);
-  const [limit, setLimit] = React.useState(10);
-
-  const throttledName = useRef(
-    throttle(
-      (newValue: string) =>
-        newValue.length >= 3 ? changeName(newValue) : changeName(''),
-      2000,
-    ),
-  );
-  useEffect(() => throttledName.current(name), [name]);
-
-  const throttledPriceFrom = useRef(
-    throttle((newValue: number) => changePriceFrom(newValue), 2000),
-  );
-  useEffect(() => throttledPriceFrom.current(priceFrom), [priceFrom]);
-
-  const throttledPriceTo = useRef(
-    throttle((newValue: number) => changePriceTo(newValue), 2000),
-  );
-  useEffect(() => throttledPriceTo.current(priceTo), [priceTo]);
+  const [filters, setFilters] = React.useState(defaultState);
 
   const throttledLimits = useRef(
-    throttle((newValue: number) => changeLimit(newValue), 2000),
+    throttle((newValue: HotelRequestFilters) => changeFilters(newValue), 2000),
   );
-  useEffect(() => throttledLimits.current(limit), [limit]);
+  useEffect(() => throttledLimits.current(filters), [filters]);
 
   const regionOptions = regions.map((item: string) => (
     <Option key={item} value={item}>
@@ -71,38 +43,29 @@ const Filters: React.FunctionComponent<FiltersProps> = ({
   ));
 
   const handleChangePriceFrom = (value: number | undefined) => {
-    if (value) {
-      setPriceFrom(value);
-    } else {
-      setPriceFrom(MIN_PRICE_HOTEL);
-    }
+    const newValue = value
+      ? { ...filters, price: { ...price, from: value } }
+      : { ...filters, price: { ...price, from: MIN_PRICE_HOTEL } };
+    setFilters(newValue);
   };
 
   const handleChangePriceTo = (value: number | undefined) => {
-    if (value) {
-      setPriceTo(value);
-    } else {
-      setPriceTo(MAX_PRICE_HOTEL);
-    }
+    const newValue = value
+      ? { ...filters, price: { ...price, to: value } }
+      : { ...filters, price: { ...price, to: MAX_PRICE_HOTEL } };
+    setFilters(newValue);
   };
 
-  const handleChangeRegion = (value: string) => {
-    setRegion(value);
-    if (value === 'choose') {
-      changeRegion('');
-    } else {
-      changeRegion(value);
-    }
+  const clearFilters = () => setFilters(defaultState);
+
+  const handleChangeFilter = (
+    value: string | number,
+    field: keyof HotelRequestFilters,
+  ) => {
+    setFilters({ ...filters, [field]: value });
   };
 
-  const clearFilters = () => {
-    setPriceTo(MAX_PRICE_HOTEL);
-    setPriceFrom(MIN_PRICE_HOTEL);
-    setRegion('choose');
-    changeRegion('');
-    setLimit(10);
-    setName('');
-  };
+  const { name, region, limit, price } = filters;
 
   return (
     <StyledFilters>
@@ -111,7 +74,7 @@ const Filters: React.FunctionComponent<FiltersProps> = ({
         <Select
           allowClear
           placeholder="Выберите регион"
-          onChange={handleChangeRegion}
+          onChange={(value: string) => handleChangeFilter(value, 'region')}
           value={region}
         >
           <Option value="choose">Выберите регион</Option>
@@ -121,7 +84,7 @@ const Filters: React.FunctionComponent<FiltersProps> = ({
       <FormItem label="Название отеля" help="Поиск работает от 3 символов">
         <Input
           placeholder="Введите название отеля"
-          onChange={e => setName(e.target.value)}
+          onChange={e => handleChangeFilter(e.target.value, 'name')}
           value={name}
         />
       </FormItem>
@@ -132,7 +95,7 @@ const Filters: React.FunctionComponent<FiltersProps> = ({
               min={MIN_PRICE_HOTEL}
               max={MAX_PRICE_HOTEL}
               onChange={value => handleChangePriceFrom(value as number)}
-              value={priceFrom}
+              value={price.from}
             />
           </Col>
           <Col span={4}>
@@ -140,7 +103,7 @@ const Filters: React.FunctionComponent<FiltersProps> = ({
               min={MIN_PRICE_HOTEL}
               max={MAX_PRICE_HOTEL}
               onChange={handleChangePriceFrom}
-              value={priceFrom}
+              value={price.from}
             />
           </Col>
         </Row>
@@ -152,7 +115,7 @@ const Filters: React.FunctionComponent<FiltersProps> = ({
               min={MIN_PRICE_HOTEL}
               max={MAX_PRICE_HOTEL}
               onChange={value => handleChangePriceTo(value as number)}
-              value={priceTo}
+              value={price.to}
             />
           </Col>
           <Col span={4}>
@@ -160,13 +123,16 @@ const Filters: React.FunctionComponent<FiltersProps> = ({
               min={MIN_PRICE_HOTEL}
               max={MAX_PRICE_HOTEL}
               onChange={handleChangePriceTo}
-              value={priceTo}
+              value={price.to}
             />
           </Col>
         </Row>
       </FormItem>
       <FormItem label="Отображать по">
-        <Select onChange={(value: number) => setLimit(value)} value={limit}>
+        <Select
+          onChange={(value: number) => handleChangeFilter(value, 'limit')}
+          value={limit}
+        >
           <Option value={10}>10</Option>
           <Option value={15}>15</Option>
           <Option value={20}>20</Option>
